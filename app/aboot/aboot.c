@@ -338,8 +338,8 @@ unsigned char *update_cmdline(const char * cmdline)
 		cmdline_len += strlen(loglevel);
 	} else if (boot_reason_alarm) {
 		cmdline_len += strlen(alarmboot_cmdline);
-	} else if (device.charger_screen_enabled &&
-			target_pause_for_battery_charge()) {
+	} else if ((target_build_variant_user() || device.charger_screen_enabled)
+			&& target_pause_for_battery_charge()) {
 		pause_at_bootup = 1;
 		cmdline_len += strlen(battchg_pause);
 	}
@@ -712,7 +712,7 @@ void boot_linux(void *kernel, unsigned *tags,
 
 #if VERIFIED_BOOT
 	/* Write protect the device info */
-	if (target_build_variant_user() && devinfo_present && mmc_write_protect("devinfo", 1))
+	if (!boot_into_recovery && target_build_variant_user() && devinfo_present && mmc_write_protect("devinfo", 1))
 	{
 		dprintf(INFO, "Failed to write protect dev info\n");
 		ASSERT(0);
@@ -2108,7 +2108,7 @@ void cmd_boot(const char *arg, void *data, unsigned sz)
 
 
 #if VERIFIED_BOOT
-	if(!device.is_unlocked)
+	if(target_build_variant_user() && !device.is_unlocked)
 	{
 		fastboot_fail("unlock device to use this command");
 		return;
@@ -2366,10 +2366,13 @@ void cmd_erase_mmc(const char *arg, void *data, unsigned sz)
 void cmd_erase(const char *arg, void *data, unsigned sz)
 {
 #if VERIFIED_BOOT
-	if(!device.is_unlocked)
+	if (target_build_variant_user())
 	{
-		fastboot_fail("device is locked. Cannot erase");
-		return;
+		if(!device.is_unlocked )
+		{
+			fastboot_fail("device is locked. Cannot erase");
+			return;	
+		}
 	}
 #endif
 
@@ -2841,6 +2844,8 @@ void cmd_flash_mmc(const char *arg, void *data, unsigned sz)
 #endif /* SSD_ENABLE */
 
 #if VERIFIED_BOOT
+	if (target_build_variant_user())
+	{
 	if(!device.is_unlocked)
 	{
 		/* if device is locked:
@@ -2861,6 +2866,7 @@ void cmd_flash_mmc(const char *arg, void *data, unsigned sz)
 			return;
 		}
 #endif
+	}
 	}
 #endif
 
