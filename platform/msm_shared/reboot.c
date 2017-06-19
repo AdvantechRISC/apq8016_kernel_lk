@@ -120,7 +120,7 @@ void reboot_device(unsigned reboot_reason)
 	 * For other cases do a hard reset
 	 */
 #if USE_PON_REBOOT_REG
-	if(reboot_reason == DLOAD)
+	if((reboot_reason == DLOAD) || (reboot_reason == NORMAL_REBOOT_MODE))
 #else
 	if(reboot_reason == FASTBOOT_MODE || (reboot_reason == DLOAD) || (reboot_reason == RECOVERY_MODE))
 #endif

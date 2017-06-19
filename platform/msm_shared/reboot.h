@@ -29,6 +29,7 @@
 #ifndef __REBOOT_H__
 #define __REBOOT_H__
 #if USE_PON_REBOOT_REG
+#define NORMAL_REBOOT_MODE  0x00
 #define RECOVERY_MODE     0x01
 #define FASTBOOT_MODE     0x02
 #define ALARM_BOOT        0x03
